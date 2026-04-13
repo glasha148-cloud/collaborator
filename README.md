@@ -22,6 +22,13 @@ A comprehensive REST API for managing museum exhibitions, artifacts, owners, and
 
 ## 📋 API Endpoints
 
+### 👥 CUSTOM
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/owners/no-middle-name` | Owners without middlename |
+| `GET` | `/api/v1/owners/no-middle-name/young` | Young owners without middlename |
+| `GET` | `/api/v1/marketing/exhibition-hits` | Marketing hits |
+
 ### 👥 Owners
 | Method | Endpoint | Description |
 |--------|----------|-------------|
