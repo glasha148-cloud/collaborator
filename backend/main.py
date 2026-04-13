@@ -34,6 +34,8 @@ app = FastAPI(
 # Подключаем все роутеры
 app.include_router(router, prefix="/api/v1", tags=["api"])
 
+app.include_router(app, prefix="/api/custom", tags=["api"])
+
 @app.get("/", tags=["🏠 Главная"])
 def read_root():
     return {
