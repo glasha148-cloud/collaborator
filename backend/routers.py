@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 import crud, schemas
 from database import get_db, get_sql_queries
 import models
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
