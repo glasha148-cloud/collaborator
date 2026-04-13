@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+# ДОБАВЛЕНО: импорт text
+from sqlalchemy import text 
 from typing import List, Dict, Any
 import crud, schemas
 from database import get_db, get_sql_queries
@@ -26,50 +28,35 @@ class SQLAwareJSONResponse(JSONResponse):
         
         return super().render(content)
 
-def create_response_with_sql(data: Any) -> Dict[str, Any]:
-    """Создает ответ с добавлением SQL запросов"""
-    sql_queries = get_sql_queries()
-    
-    response_data = {
-        "data": data,
-        "sql": [
-            {
-                'query': query['statement'].strip(),
-                'parameters': str(query['parameters']),
-                'executemany': query['executemany']
-            } for query in sql_queries
-        ]
-    }
-    return response_data
 # ==================== КАСТОМНЫЕ РУЧКИ =======================
+
 # Задание 5 Простой уровень
 @router.get("/owners/no-middle-name", response_class=SQLAwareJSONResponse)
-async def get_owners_no_middle_name(db=Depends(get_db)):
-    query = "SELECT * FROM owners WHERE middle_name IS NULL"
-    # Используем db.execute для выполнения, чтобы get_sql_queries зафиксировал запрос
-    result = db.execute(query).fetchall()
+async def get_owners_no_middle_name(db: Session = Depends(get_db)):
+    query = text("SELECT * FROM owners WHERE middle_name IS NULL")
+    result = db.execute(query).mappings().all() # .mappings() нужен для превращения строк в словари
     return result
 
 # Задание 5 Продвинутый уровень
 @router.get("/owners/no-middle-name/young", response_class=SQLAwareJSONResponse)
-async def get_young_owners_no_middle_name(db=Depends(get_db)):
-    query = "SELECT * FROM owners WHERE middle_name IS NULL AND birth_date > '1990-12-31'"
-    result = db.execute(query).fetchall()
+async def get_young_owners_no_middle_name(db: Session = Depends(get_db)):
+    query = text("SELECT * FROM owners WHERE middle_name IS NULL AND birth_date > '1990-12-31'")
+    result = db.execute(query).mappings().all()
     return result
 
-# Задание 5 из 2 части
+# Задание 5 из 2 части (Маркетинг)
 @router.get("/marketing/exhibition-hits", response_class=SQLAwareJSONResponse)
-async def get_exhibition_hits(db=Depends(get_db)):
-    query = """
+async def get_exhibition_hits(db: Session = Depends(get_db)):
+    query = text("""
         SELECT w.name, 
                COUNT(m.id) as trips_count, 
                SUM(m.price) as total_logistics_cost
         FROM wings w
         JOIN moves m ON w.id = m.wing_id
-        GROUP BY w.id
+        GROUP BY w.id, w.name
         ORDER BY trips_count DESC
-    """
-    result = db.execute(query).fetchall()
+    """)
+    result = db.execute(query).mappings().all()
     return result
 # ==================== ВЛАДЕЛЬЦЫ (OWNERS) ====================
 @router.get("/owners/", tags=["👥 Владельцы"])
